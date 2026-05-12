@@ -15,6 +15,7 @@ import definePlugin from "@utils/types";
 import { Popout, TextInput, useRef, useState } from "@webpack/common";
 
 import KAOMOJI_DB from "./kaomoji-db.json";
+import { Devs } from "@utils/constants";
 
 const MAX_RESULTS_CAP: number = 500;
 
@@ -163,7 +164,7 @@ const KaomojiButton: ChatBarButtonFactory = ({ isMainChat }) => {
 
 export default definePlugin({
     name: "KaomojiPicker",
-    authors: [{ name: "flyingmisaki", id: 0n }],
+    authors: [Devs.flyingmisaki],
     description: "Adds a Kaomoji picker to the chat bar.",
     chatBarButton: {
         render: KaomojiButton,
