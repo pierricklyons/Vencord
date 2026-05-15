@@ -9,11 +9,12 @@ import { BaseText } from "@components/BaseText";
 import { Button } from "@components/Button";
 import { Card } from "@components/Card";
 import { Divider } from "@components/Divider";
+import { Flex } from "@components/Flex";
 import { Grid } from "@components/Grid";
 import { Devs } from "@utils/constants";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import definePlugin from "@utils/types";
-import { Popout, TextInput, useRef, useState } from "@webpack/common";
+import { Popout, ScrollerThin, TextInput, useMemo, useRef, useState } from "@webpack/common";
 
 import KAOMOJI_DB from "./kaomoji-db.json";
 
@@ -21,16 +22,16 @@ const MAX_RESULTS_CAP: number = 500;
 
 type KaomojiEntry = {
     text: string;
-    subCategory: string;
+    subcategory: string;
 };
 
 const populateKaomojiEntries = (kaomojiDb: any) => {
     const entries: KaomojiEntry[] = [];
 
     for (const value of Object.values(kaomojiDb as Record<string, Record<string, string[]>>)) {
-        for (const [subCategory, list] of Object.entries(value)) {
+        for (const [subcategory, list] of Object.entries(value)) {
             for (const text of list) {
-                entries.push({ text, subCategory });
+                entries.push({ text, subcategory });
             }
         }
     }
@@ -39,18 +40,25 @@ const populateKaomojiEntries = (kaomojiDb: any) => {
 
 const kaomojiEntries: KaomojiEntry[] = populateKaomojiEntries(KAOMOJI_DB);
 
-const KaomojiPicker = ({ maxResultsCap = 250, onPick }: { maxResultsCap: number, onPick: () => void; }) => {
+const KaomojiPicker = ({ maxResultsCap = 250, onPick }: { maxResultsCap?: number, onPick: () => void; }) => {
     const [queryText, setQueryText] = useState<string>("");
-    const [current, setCurrent] = useState<string | null>("");
+    const [current, setCurrent] = useState<string | null>(null);
 
     const query: string = queryText.trim().toLowerCase();
 
-    const results: KaomojiEntry[] = query === ""
-        ? []
-        : kaomojiEntries.filter(
-            ({ text, subCategory }) =>
-                text.includes(queryText) || subCategory.toLowerCase().includes(query)
-        ).slice(0, maxResultsCap);
+    const results: KaomojiEntry[] = useMemo(
+        () =>
+            query === ""
+                ? []
+                : kaomojiEntries
+                    .filter(
+                        ({ text, subcategory }) =>
+                            text.toLowerCase().includes(query) ||
+                            subcategory.toLowerCase().includes(query)
+                    )
+                    .slice(0, maxResultsCap),
+        [query, maxResultsCap]
+    );
 
     return (
         <Card
@@ -63,7 +71,7 @@ const KaomojiPicker = ({ maxResultsCap = 250, onPick }: { maxResultsCap: number,
                 overflow: "hidden",
                 background: "var(--background-surface-high)",
                 padding: 0,
-                border: "1px solid"
+                border: "1px solid var(--border-subtle)"
             }}
         >
             <div style={{ padding: "12px", background: "var(--background-surface-high)" }}>
@@ -77,24 +85,22 @@ const KaomojiPicker = ({ maxResultsCap = 250, onPick }: { maxResultsCap: number,
 
             <Divider style={{ margin: 0 }} />
 
-            <div
+            <ScrollerThin
                 style={{
                     flex: 1,
-                    overflowY: "auto",
-                    background: "var(--background-base-lower)"
+                    background: "var(--background-surface-high)"
                 }}
             >
                 {query.length === 0 && (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Flex style={{ width: "100%", height: "100%" }} justifyContent="center" alignItems="center">
                         <BaseText style={{ opacity: 0.5 }}>Start typing! ヽ(・∀・)ﾉ</BaseText>
-                    </div>
+                    </Flex>
                 )}
-
                 {results.length > 0 && (
                     <Grid columns={2} gap="8px" style={{ padding: "12px" }}>
-                        {results.map(({ text }) => (
+                        {results.map(({ text, subcategory }) => (
                             <Button
-                                key={text}
+                                key={text + subcategory}
                                 size="medium"
                                 onClick={() => {
                                     onPick();
@@ -109,19 +115,18 @@ const KaomojiPicker = ({ maxResultsCap = 250, onPick }: { maxResultsCap: number,
                         ))}
                     </Grid>
                 )}
-
                 {query.length > 0 && results.length === 0 && (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Flex style={{ width: "100%", height: "100%" }} justifyContent="center" alignItems="center">
                         <BaseText style={{ opacity: 0.5 }}>No results ಥ_ಥ</BaseText>
-                    </div>
+                    </Flex>
                 )}
-            </div>
+            </ScrollerThin>
 
             <Divider style={{ margin: 0 }} />
 
-            <div style={{ height: "48px", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--background-surface-high)", textAlign: "center" }}>
+            <Flex style={{ height: "48px", width: "100%", background: "var(--background-base-lower)" }} justifyContent="center" alignItems="center">
                 <BaseText>{results.length !== 0 && current}</BaseText>
-            </div>
+            </Flex>
         </Card>
     );
 };
