@@ -10,12 +10,12 @@ import { Button } from "@components/Button";
 import { Card } from "@components/Card";
 import { Divider } from "@components/Divider";
 import { Grid } from "@components/Grid";
+import { Devs } from "@utils/constants";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import definePlugin from "@utils/types";
 import { Popout, TextInput, useRef, useState } from "@webpack/common";
 
 import KAOMOJI_DB from "./kaomoji-db.json";
-import { Devs } from "@utils/constants";
 
 const MAX_RESULTS_CAP: number = 500;
 
